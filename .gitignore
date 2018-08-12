@@ -13,3 +13,8 @@
 
 # Project credentials
 .gcp.json
+
+# Data
+*.flac
+*.wav
+*.mp3

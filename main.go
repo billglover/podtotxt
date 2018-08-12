@@ -11,6 +11,20 @@ import (
 )
 
 func main() {
+
+	resp, err := requestRecognition("in.flac")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, result := range resp.Results {
+		for _, alt := range result.Alternatives {
+			fmt.Println(alt.Transcript)
+		}
+	}
+}
+
+func requestRecognition(filename string) (*speechpb.LongRunningRecognizeResponse, error) {
 	ctx := context.Background()
 
 	client, err := speech.NewClient(ctx)
@@ -18,12 +32,12 @@ func main() {
 		log.Fatalln("failed to create client:", err)
 	}
 
-	data, err := ioutil.ReadFile("in.flac")
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("failed to read file: %v", err)
 	}
 
-	resp, err := client.Recognize(ctx, &speechpb.RecognizeRequest{
+	op, err := client.LongRunningRecognize(ctx, &speechpb.LongRunningRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
 			Encoding:        speechpb.RecognitionConfig_FLAC,
 			SampleRateHertz: int32(48000),
@@ -35,13 +49,10 @@ func main() {
 			},
 		},
 	})
+
 	if err != nil {
-		log.Fatalln("failed to recognise:", err)
+		return nil, err
 	}
 
-	for _, result := range resp.Results {
-		for _, alt := range result.Alternatives {
-			fmt.Println(alt.Transcript)
-		}
-	}
+	return op.Wait(ctx)
 }
