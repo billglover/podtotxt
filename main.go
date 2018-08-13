@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 
 	speech "cloud.google.com/go/speech/apiv1"
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1"
@@ -12,7 +13,11 @@ import (
 
 func main() {
 
-	resp, err := requestRecognition("in.flac")
+	if len(os.Args) != 1 {
+		log.Fatal("must specify audio file as the only argument")
+	}
+
+	resp, err := requestRecognition(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
